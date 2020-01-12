@@ -1,0 +1,27 @@
+# Benchmark "onebitfulladder" written by ABC on Sat May  4 23:48:23 2019
+.model onebitfulladder
+.inputs a b cin
+.outputs s0 cout
+.names a b new_n6_
+10 1
+.names a b new_n7_
+01 1
+.names new_n6_ new_n7_ new_n8_
+00 1
+.names cin new_n8_ new_n9_
+00 1
+.names cin new_n8_ new_n10_
+11 1
+.names new_n9_ new_n10_ cout
+00 0
+.names a b new_n12_
+11 1
+.names a cin new_n13_
+11 1
+.names new_n12_ new_n13_ new_n14_
+00 1
+.names b cin new_n15_
+11 1
+.names new_n14_ new_n15_ s0
+10 0
+.end
