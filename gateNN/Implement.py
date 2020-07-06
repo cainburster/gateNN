@@ -110,7 +110,27 @@ class Implement:
         log_file = os.path.join(self.result_folder, "log.txt")
         with open(log_file, "a") as fp:
             self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
-        
+    
+    def repeat_run(self, times):
+        os.makedirs(self.result_folder, exist_ok=True)
+        general_log = os.path.join(self.result_folder, "summary_log.txt")
+        import math
+        t = int(math.log10(times))+1
+        f = "log-{:0>"+str(t)+"}.txt"
+        cnt = set()
+        for i in range(1, times+1):
+            print("Experiment %d start" % i)
+            log_file = os.path.join(self.result_folder, f.format(i))
+            with open(log_file, "a") as fp:
+                judge = self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
+            if not judge:
+                cnt.add(i)
+            print("Experiment %d finish" % i)
+         
+        with open(general_log, "w") as fp:
+            fp.write("{}/{} ({:.2f}%) Success\n".format(times-len(cnt), times, (times-len(cnt))/times*100))
+            fp.write("Failure case: " + str(cnt))
+    
     def training(self, data_per_epoch=4096, epoch=1000, batch_size=64, savedfile=sys.stdout):      
         
         tempBlif = os.path.join(self.result_folder, "tempblif.blif")
