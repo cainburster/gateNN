@@ -1,9 +1,7 @@
 # Benchmark "Multi12" written by ABC on Mon Jul  6 19:52:55 2020
 .model Multi12
-.inputs a00 a01 a02 a03 a04 a05 a06 a07 a08 a09 a10 a11 b00 b01 b02 b03 b04 \
- b05 b06 b07 b08 b09 b10 b11
-.outputs m00 m01 m02 m03 m04 m05 m06 m07 m08 m09 m10 m11 m12 m13 m14 m15 \
- m16 m17 m18 m19 m20 m21 m22 m23
+.inputs a00 a01 a02 a03 a04 a05 a06 a07 a08 a09 a10 a11 b00 b01 b02 b03 b04 b05 b06 b07 b08 b09 b10 b11
+.outputs m00 m01 m02 m03 m04 m05 m06 m07 m08 m09 m10 m11 m12 m13 m14 m15 m16 m17 m18 m19 m20 m21 m22 m23
 .names a00 b00 m00
 11 1
 .names a01 b00 new_n50_
