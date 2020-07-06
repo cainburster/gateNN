@@ -1,0 +1,14 @@
+{
+    "blif_file_path" : "example/onebitfulladder.blif",
+    "result_folder" : "temp_result",
+    "abc_path" : "abc/",
+    "vacant_gate":4, 
+    "model_type":"kernel", 
+    "fan_out_training":true, 
+    "loader_method":"random",
+    "data_per_epoch":64,
+    "batch_size":16,
+    "training_rate":0.1,
+    "optimizer":"sgd",
+    "maximum_epoch":500
+}
