@@ -1,0 +1,51 @@
+***********weight update***********
+Trainable Gate: new_n9_, initial type: NOR, weight: [[-0.02597375]
+ [-0.04567766]
+ [-0.04694641]], bias: [0.]
+Trainable Gate: new_n12_, initial type: AND, weight: [[-0.03198645]
+ [-0.03620539]
+ [ 0.070681  ]], bias: [0.]
+Trainable Gate: new_n13_, initial type: AND, weight: [[-0.06366809]
+ [ 0.09949567]
+ [ 0.0089138 ]], bias: [0.]
+Trainable Gate: new_n14_, initial type: NOR, weight: [[ 0.07975245]
+ [-0.05809364]
+ [ 0.01619212]], bias: [0.]
+Fan out Gate: cout, initial type: OR, weight: [[ 0.7]
+ [ 0.7]
+ [-0.7]], bias: [0.7]
+Fan out Gate: s0, initial type: NAND2_PN, weight: [[-0.7]
+ [ 0.7]
+ [ 0.7]], bias: [0.7]
+***********training process***********
+[epoch     1] temporary losses: 0.78125000
+[epoch     2] temporary losses: 0.18750000
+[epoch     3] temporary losses: 0.12500000
+[epoch     4] temporary losses: 0.18750000
+[epoch     5] temporary losses: 0.40625000
+[epoch     6] temporary losses: 0.09375000
+[epoch     7] temporary losses: 0.18750000
+[epoch     8] temporary losses: 0.28125000
+[epoch     9] temporary losses: 0.15625000
+[epoch    10] temporary losses: 0.00000000
+***********weight update***********
+Trainable Gate: new_n9_, initial type: NOR, weight: [[-0.04347375]
+ [-0.02817767]
+ [ 0.11055358]], bias: [-0.15749998]
+Trainable Gate: new_n12_, initial type: AND, weight: [[0.03916072]
+ [0.02236442]
+ [0.05085392]], bias: [0.01057315]
+Trainable Gate: new_n13_, initial type: AND, weight: [[0.02077057]
+ [0.0763662 ]
+ [0.06125052]], bias: [-0.00944998]
+Trainable Gate: new_n14_, initial type: NOR, weight: [[-0.09469131]
+ [-0.05852488]
+ [ 0.12136084]], bias: [0.06970622]
+Fan out Gate: cout, initial type: OR, weight: [[ 0.69775]
+ [ 0.70225]
+ [-0.69775]], bias: [0.69775]
+Fan out Gate: s0, initial type: NAND2_PN, weight: [[-0.6829999 ]
+ [ 0.70099986]
+ [ 0.6829999 ]], bias: [0.6990001]
+***********result***********
+result {'new_n9_': 'NOR', 'new_n12_': 'AND', 'new_n13_': 'AND', 'new_n14_': 'XNOR'}
