@@ -64,7 +64,7 @@ fun2 = np.vectorize(binary_option)
 
 
 class DAGmodel:
-    def __init__(self, input_names, connections, output_names, model_type="kernel", fan_out_training=True, training_rate=0.01, optimizer="momentum"):
+    def __init__(self, input_names, connections, output_names, model_type="kernel", fan_out_training=True, training_rate=0.01, optimizer="momentum", has_bias=True):
         assert model_type in ["kernel", "normal"]
         #tf.reset_default_graph()
         self.input_nodes = input_names.copy()
@@ -72,11 +72,11 @@ class DAGmodel:
         with tf.name_scope('input'):
             self.trueInputs = tf.placeholder(tf.float32, shape = (None, len(self.input_nodes)), name = 'ins')
             self.trueOut = tf.placeholder(tf.float32, shape = (None, len(self.output_nodes)), name = 'outs')
-        self.build_model(connections, model_type, fan_out_training)
+        self.build_model(connections, model_type, fan_out_training, has_bias)
         self.build_loss()
         self.build_optimizer(training_rate, optimizer)
     
-    def build_gates(self, trainable, namelist, connection, model_type, fan_out_training):
+    def build_gates(self, trainable, namelist, connection, model_type, fan_out_training, has_bias):
         # sign function forward, tanh backward
         def binary_activation(activation):
             t = tf.clip_by_value(activation, -3.5, 3.5)
@@ -126,7 +126,7 @@ class DAGmodel:
             self.nodes[out] = binaryDense(ins=affined_in, 
                                           unit=1, 
                                           activation=train_activation, 
-                                          bias=True,
+                                          bias=has_bias,
                                           kernel_initializer=tf.random_uniform_initializer(-0.1,0.1), 
                                           bias_initializer=tf.zeros_initializer(),
                                           trainable=True,
@@ -153,7 +153,7 @@ class DAGmodel:
                 self.nodes[out] = binaryDense(ins=affined_in, 
                                               unit=1, 
                                               activation=binary_activation, 
-                                              bias=True, 
+                                              bias=has_bias, 
                                               kernel_initializer=tf.constant_initializer(np.array(p[connection]['weight']) * coeff), 
                                               bias_initializer=tf.constant_initializer(np.array(p[connection]['bias']) * coeff),
                                               trainable=train_sym, 
@@ -163,14 +163,14 @@ class DAGmodel:
 
 
     # connections list ele: [trainable, [in1, in2, out], *connectionPattern]
-    def build_model(self, connections, model_type, fan_out_training):
+    def build_model(self, connections, model_type, fan_out_training, has_bias):
         self.nodes = {}
         self.gatesSimulation = {}
         for index, name in enumerate(self.input_nodes):
             self.nodes[name] = self.trueInputs[:,index]
         for item in connections:
             trainable, namelist, connectionPattern = item
-            self.build_gates(trainable, namelist, connectionPattern, model_type, fan_out_training)
+            self.build_gates(trainable, namelist, connectionPattern, model_type, fan_out_training, has_bias)
         self.prediction = tf.stack([self.nodes[name] for name in self.output_nodes], axis = 1)
         
     def build_loss(self):

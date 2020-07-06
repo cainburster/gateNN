@@ -64,7 +64,8 @@ class Implement:
                        batch_size=64,
                        training_rate=0.05,
                        optimizer="momentum",
-                       maximum_epoch=100):
+                       maximum_epoch=100,
+                       has_bias=True):
         
         self.blif_file_path = os.path.abspath(blif_file_path)
         self.result_folder = os.path.abspath(result_folder)
@@ -78,6 +79,7 @@ class Implement:
         self.training_rate = training_rate
         self.optimizer = optimizer
         self.maximum_epoch = maximum_epoch
+        self.has_bias = has_bias
         
         self.reader = BlifReader(blif_file_path)
         self.reader.showNode()
@@ -93,16 +95,17 @@ class Implement:
                               model_type=model_type,
                               fan_out_training=fan_out_training, 
                               training_rate=training_rate,
-                              optimizer=self.optimizer)
+                              optimizer=self.optimizer,
+                              has_bias=self.has_bias)
         
         self.train_gates = {}
         self.fan_out_gates = {}
         for trainable, gates, gate_type in conn_info:
             in1,in2,out = gates
             if trainable == True:
-                self.train_gates[out] = Gate(out, gate_type)
+                self.train_gates[out] = Gate(out, gate_type, self.has_bias)
             elif trainable == "train":
-                self.fan_out_gates[out] = Gate(out, gate_type)
+                self.fan_out_gates[out] = Gate(out, gate_type, self.has_bias)
     
     
     def run(self):
@@ -147,7 +150,7 @@ class Implement:
                         name = var.name[:var.name.find("-hidden_act")]
                         if "weight" in var.name:
                             self.train_gates[name].add_weight(var)
-                        if "bias" in var.name:
+                        if self.has_bias and"bias" in var.name:
                             self.train_gates[name].add_bias(var)
                     if 'route' in var.name:
                         name = var.name[:var.name.find("-route_act")]
@@ -155,7 +158,7 @@ class Implement:
                             continue
                         if "weight" in var.name:
                             self.fan_out_gates[name].add_weight(var)
-                        if "bias" in var.name:
+                        if self.has_bias and "bias" in var.name:
                             self.fan_out_gates[name].add_bias(var)
             
             self.print_parameters(sess, savedfile)
@@ -216,18 +219,34 @@ class Implement:
     
     def print_parameters(self, sess, savedfile=sys.stdout):
         print('***********weight update***********', file=savedfile)
-        for gate in self.train_gates.values():
-            print("Trainable Gate: {}, initial type: {}, weight: {}, bias: {}".format(
-                                    gate.name, 
-                                    gate.type,
-                                    gate.weight.eval(session=sess),
-                                    gate.bias.eval(session=sess)),
-                  file=savedfile)
-        if self.fan_out_training:
-            for gate in self.fan_out_gates.values():
-                print("Fan out Gate: {}, initial type: {}, weight: {}, bias: {}".format(
+        if self.has_bias:
+            for gate in self.train_gates.values():
+                print("Trainable Gate: {}, initial type: {}, weight: {}, bias: {}".format(
                                         gate.name, 
                                         gate.type,
                                         gate.weight.eval(session=sess),
                                         gate.bias.eval(session=sess)),
                       file=savedfile)
+            if self.fan_out_training:
+                for gate in self.fan_out_gates.values():
+                    print("Fan out Gate: {}, initial type: {}, weight: {}, bias: {}".format(
+                                            gate.name, 
+                                            gate.type,
+                                            gate.weight.eval(session=sess),
+                                            gate.bias.eval(session=sess)),
+                          file=savedfile)
+        else:
+            for gate in self.train_gates.values():
+                print("Trainable Gate: {}, initial type: {}, weight: {}".format(
+                                        gate.name, 
+                                        gate.type,
+                                        gate.weight.eval(session=sess)),
+                      file=savedfile)
+            if self.fan_out_training:
+                for gate in self.fan_out_gates.values():
+                    print("Fan out Gate: {}, initial type: {}, weight: {}".format(
+                                            gate.name, 
+                                            gate.type,
+                                            gate.weight.eval(session=sess)),
+                          file=savedfile)
+            
