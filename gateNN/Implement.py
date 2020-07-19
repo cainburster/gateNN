@@ -320,7 +320,7 @@ class Implement:
                             input_table[name] = int(t)
                         #print(input_table)
                         candidate = [input_table[name] for name in self.reader.nodeName["input"]]
-                        print(candidate)
+                        print(candidate, file=savedfile)
                         self.data_loader.add_sample(candidate)
                 
                 # training on small set
