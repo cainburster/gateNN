@@ -121,10 +121,16 @@ class Implement:
         log_file = os.path.join(self.result_folder, "log.txt")
         with open(log_file, "a") as fp:
             if self.loader_method == "sample":
-                self.training_sample(savedfile=fp)
+                flag = self.training_sample(savedfile=fp)
             else:
-                self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
-    
+                flag = self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
+        if flag:
+            with open(os.path.join(self.result_folder, "success"), "w") as fp:
+                pass
+        else:
+            with open(os.path.join(self.result_folder, "failure"), "w") as fp:
+                pass
+        
     def repeat_run(self, times):
         os.makedirs(self.result_folder, exist_ok=True)
         general_log = os.path.join(self.result_folder, "summary_log.txt")
