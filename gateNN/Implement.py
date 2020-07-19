@@ -87,7 +87,7 @@ class Implement:
         self.data_loader = DataGenerator(self.reader.connection, self.reader.nodeName, method = loader_method)
         #dg2.generator()
         self.settler = MissingSet(self.reader.connection, self.reader.nodeName)
-        candidates, conn_info = self.settler.createVacantBoard(vacant_gate, ["new_n377_", "new_n310_", "new_n314_", "new_n426_", "new_n296_", "new_n204_", "new_n272_", "new_n141_", "new_n443_", "new_n348_"])
+        candidates, conn_info = self.settler.createVacantBoard(vacant_gate)
         
         # output connection with weight of missing gates
         self.fan_in_respond = [set() for i in range(len(self.reader.nodeName["output"]))]

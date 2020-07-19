@@ -1,10 +1,12 @@
-setting = {"blif_file_path" : "./example/multi4.blif",
-           "result_folder" : "trial_result",
-           "abc_path" : "./abc/",
-           "vacant_gate":5,
-           "model_type":"kernel", 
-           "fan_out_training":false, 
-           "loader_method":"sample",
-           "training_rate":0.1,
-           "optimizer":"sgd",
-           "has_bias":false}
+{
+    "blif_file_path" : "./example/multi4.blif",
+    "result_folder" : "trial_result",
+    "abc_path" : "./abc/",
+    "vacant_gate":5,
+    "model_type":"kernel", 
+    "fan_out_training":false, 
+    "loader_method":"sample",
+    "training_rate":0.1,
+    "optimizer":"sgd",
+    "has_bias":false
+}
