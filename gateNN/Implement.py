@@ -357,14 +357,14 @@ class Implement:
                         self.print_parameters(sess, savedfile) 
                         # give a chance, make sure weight has not BUF and NOT
                         if chance == chance_of_reset_gate:
-                            print("[Failure] cannot find candidate after repetitive trials")
+                            print("[Failure] cannot find candidate after repetitive trials", file=savedfile)
                             self.print_parameters(sess, savedfile) 
                             return False
                         # finding which gates may got problem, from fan_in of wrong predition
                         predict = sess.run((self.model.prediction), feed_dict = {self.model.trueInputs: train_x})
-                        print("pridiction: {}, true: {}".format(predict,train_y))
+                        print("pridiction: {}, true: {}".format(predict,train_y), file=savedfile)
                         wrong_output = np.nonzero(np.any(predict != train_y, axis = 0))[0]
-                        print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in wrong_output]))
+                        print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in wrong_output]), file=savedfile)
                         correspond_gates = set()
                         for o in wrong_output:
                             correspond_gates = correspond_gates.union(self.fan_in_respond[o])
