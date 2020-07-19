@@ -1,5 +1,5 @@
-# Benchmark "isca_example/c432" written by ABC on Tue Jan  7 01:59:27 2020
-.model isca_example/c432
+# Benchmark "circuit" written by ABC on Mon Jul 20 02:36:24 2020
+.model circuit
 .inputs 1 4 8 11 14 17 21 24 27 30 34 37 40 43 47 50 53 56 60 63 66 69 73 76 79 82 86 89 92 95 99 102 105 108 112 115
 .outputs 223 329 370 421 430 431 432
 .names 1 4 new_n44_
