@@ -324,7 +324,7 @@ class Implement:
                         self.data_loader.add_sample(candidate)
                 
                 # training on small set
-                def training_part(x,y, max_epoch):
+                def training_part(x,y, max_epoch, chance):
                     batch = min(4, x.shape[0])
                     wrong = [x.shape[0]-1]
                     for epoch in range(1, max_epoch+1):
@@ -345,12 +345,12 @@ class Implement:
                             print("[iteration %3d][epoch %4d] find a new candidate" % (i, epoch), file=savedfile)
                             return True
                         # wrong = np.nonzero(np.any(predict!=y, axis=1))[0]
-                    print("[Failure] [iteration %3d][epoch %4d] [loss %.3f] reach maximum epoch, cannot find candidate!" % (i, epoch, loss_value), file=savedfile)
+                    print("[Failure %2d] [iteration %3d][epoch %4d] [loss %.3f] reach maximum epoch, cannot find candidate!" % (chance, i, epoch, loss_value), file=savedfile)
                     return False
                     
                 train_x, train_y = self.data_loader.generator()
                 for chance in range(chance_of_reset_gate+1):
-                    if training_part(train_x, train_y, max_epoch):
+                    if training_part(train_x, train_y, max_epoch, chance+1):
                         #self.print_parameters(sess,savedfile)
                         break
                     else:
