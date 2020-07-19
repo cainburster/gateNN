@@ -10,9 +10,14 @@ class MissingSet:
         self.candidates = []
     
         self.links = collections.defaultdict(list)
+        self.backwards = collections.defaultdict(list)
         for in1,in2,out,g_type in self.connection:
             self.links[in1].append(out)
-            self.links[in2].append(out)
+            self.backwards[out].append(in1)
+            if in2:
+                self.links[in2].append(out)
+                self.backwards[out].append(in2)
+            
             if g_type != "BUF1" or g_type != "BUF2" or g_type != "NOT1" or g_type != "NOT2":
                 self.candidates.append(out)
         
@@ -28,6 +33,21 @@ class MissingSet:
                 continue
             result.add(g)
             for n_g in self.links[g]:
+                queue.appendleft(n_g)
+        return result
+    
+    def fan_in(self, gate): # include gate itself, include input node
+        if gate in self.inputs: 
+            return {gate} # make no sense
+        queue = collections.deque()
+        queue.appendleft(gate)
+        result = set()
+        while queue:
+            g = queue.pop()
+            if g in result:
+                continue
+            result.add(g)
+            for n_g in self.backwards[g]:
                 queue.appendleft(n_g)
         return result
     

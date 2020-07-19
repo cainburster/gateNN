@@ -127,7 +127,7 @@ class DAGmodel:
                                           unit=1, 
                                           activation=train_activation, 
                                           bias=has_bias,
-                                          kernel_initializer=tf.random_uniform_initializer(-0.1,0.1), 
+                                          kernel_initializer=tf.random_uniform_initializer(-0.7,0.7), 
                                           bias_initializer=tf.zeros_initializer(),
                                           trainable=True,
                                           name=out+"-hidden_act")
@@ -135,10 +135,12 @@ class DAGmodel:
         else:
             if fan_out_training and trainable == 'train':
                 train_sym = True
-                coeff = 0.7
+                coeff = np.array([[0.4],[0.4],[0.6]])
+                coeff_bias = 0.5
             else:
                 train_sym = False
-                coeff = 1.0
+                coeff = np.array([[0.4],[0.4],[0.6]])
+                coeff_bias = 0.5
             if connection == 'BUF':
                 self.nodes[out] = self.nodes[in1]
             elif connection == 'NOT':
@@ -155,7 +157,7 @@ class DAGmodel:
                                               activation=binary_activation, 
                                               bias=has_bias, 
                                               kernel_initializer=tf.constant_initializer(np.array(p[connection]['weight']) * coeff), 
-                                              bias_initializer=tf.constant_initializer(np.array(p[connection]['bias']) * coeff),
+                                              bias_initializer=tf.constant_initializer(np.array(p[connection]['bias']) * coeff_bias),
                                               trainable=train_sym, 
                                               name=out+"-route_act")        
                 if fan_out_training and trainable == 'train':

@@ -5,11 +5,13 @@ import numpy as np
 class DataGenerator:
     def __init__(self, connection, nodeName, method="all"):
         self.method = method
-        assert self.method in ["all", "random", "other"] # other is not implemented yet
+        assert self.method in ["all", "random", "sample", "other"] # other is not implemented yet
         self.L = len(nodeName["input"])
         self._embedding(connection, nodeName)
         if self.method == "all":
             self.pre_input, self.pre_output = self.generate_all_pattern()
+        if self.method == "sample":
+            self.candidate_bag = {} # {(in1,in2,...):(out1,out2,...),...}
 
     def _embedding(self, connection, nodeName):
         self.nodes = {}
@@ -106,3 +108,20 @@ class DataGenerator:
             return self.pre_input, self.pre_output
         if self.method == "random":
             return self.generate_random_pattern(total_size)
+        if self.method == "sample":
+            if not self.candidate_bag:
+                raise Exception("The sample set is empty! Cannot generate data!")
+            inputs = np.stack([list(key) for key in self.candidate_bag.keys()], axis = 0)
+            outputs = np.stack([list(self.candidate_bag[key]) for key in self.candidate_bag.keys()], axis = 0)
+            return inputs, outputs
+        
+    def add_sample(self, candidate): # iterative variable, 1-d
+        candidate = list(candidate)
+        o = self._forward([candidate])[0]
+        in_ = [2*c-1 for c in candidate]
+        out_ = [2*c-1 for c in o]
+        self.candidate_bag[tuple(in_)] = tuple(out_)
+        return
+    
+    def reset_sample(self):
+        self.candidate_bag = {}
