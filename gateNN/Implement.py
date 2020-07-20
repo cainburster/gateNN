@@ -331,17 +331,23 @@ class Implement:
                         x, y = shuffle(x, y)
                         
                         BT = train_x.shape[0]//batch
+                        total_loss = 0
                         for bt in range(BT):
                             ins = x[bt*batch:(bt+1)*batch]
                             outs = y[bt*batch:(bt+1)*batch]
                             _, loss_value = sess.run((self.model.opt, self.model.loss), 
                                             feed_dict = {self.model.trueInputs: ins, self.model.trueOut: outs})  
-                            #final_loss += loss_value
-                        
-                        
-                        predict, loss_value = sess.run((self.model.prediction, self.model.loss),
-                                    feed_dict = {self.model.trueInputs: x, self.model.trueOut: y})
-                        if loss_value == 0:
+                            total_loss += loss_value
+                        if train_x.shape[0] > BT * batch:
+                            ins = x[BT*batch:train_x.shape[0]]
+                            outs = y[BT*batch:train_x.shape[0]]
+                            _, loss_value = sess.run((self.model.opt, self.model.loss),
+                                            feed_dict = {self.model.trueInputs: ins, self.model.trueOut: outs})
+                            total_loss += loss_value
+                            
+                        #predict, loss_value = sess.run((self.model.prediction, self.model.loss),
+                        #            feed_dict = {self.model.trueInputs: x, self.model.trueOut: y})
+                        if total_loss == 0:
                             print("[iteration %3d][epoch %4d] find a new candidate" % (i, epoch), file=savedfile)
                             return True
                         # wrong = np.nonzero(np.any(predict!=y, axis=1))[0]
