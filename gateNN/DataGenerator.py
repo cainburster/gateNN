@@ -19,14 +19,17 @@ class DataGenerator:
         inputnumber = len(nodeName['input'])
         outputnumber = len(nodeName['output'])
         with tf.name_scope('true_network'):
-            self.inputs = tf.placeholder(tf.int8, shape = (None, inputnumber), name = 'ins')
+            self.inputs = tf.placeholder(tf.int32, shape = (None, inputnumber), name = 'ins')
         
             for index, name in enumerate(nodeName['input']):
                 self.nodes[name] = self.inputs[:,index]
             for item in connection:
                 in1, in2, out, gate_type = item
-                if gate_type == "ZERO" or gate_type == "ONE":
-                    raise TypeError("type of gate cannot be embedded")
+                if gate_type == "ZERO":
+                    self.nodes[out] = self.nodes[in1] * 0
+                elif gate_type == "ONE":
+                    self.nodes[out] = self.nodes[in1] * 0 + 1
+                    #raise TypeError("type of gate cannot be embedded")
                 elif gate_type == "BUF":
                     self.nodes[out] = self.nodes[in1]
                 elif gate_type == "NOT":
