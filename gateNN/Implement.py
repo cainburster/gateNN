@@ -37,6 +37,7 @@ class Gate:
     
     def judge(self, sess, savedfile=sys.stdout):
         w = self.weight.eval(session=sess)
+        w = np.clip(w, -1, 1)
         if w.shape[0] == 3:
             ans = np.dot(self.inputs_k, w)
         else:
