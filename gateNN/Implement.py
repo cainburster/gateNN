@@ -1,5 +1,6 @@
 import sys
 import os
+import time
 from sklearn.utils import shuffle
 import numpy as np
 import tensorflow as tf
@@ -8,6 +9,9 @@ from gateNN.BlifProcessor import BlifReader, BlifWriter
 from gateNN.DataGenerator import DataGenerator
 from gateNN.MissingSet import MissingSet
 from gateNN.model import DAGmodel
+
+def myprint(value, file):
+    print("[Time: {}] {}".format(time.perf_counter(),value), file=file)
 
 class Gate:
     gate_types = ["LOW", "AND", "AND2_PN", "BUF1", 
@@ -120,16 +124,34 @@ class Implement:
         os.makedirs(self.result_folder, exist_ok=True)
         log_file = os.path.join(self.result_folder, "log.txt")
         with open(log_file, "a") as fp:
+            myprint("###start training!###", file = fp)
             if self.loader_method == "sample":
                 flag = self.training_sample(savedfile=fp)
             else:
                 flag = self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
+            myprint("###end training!###", file = fp)
+            if not flag:
+                if len(self.reader.nodeName["input"]) <= 18:
+                    current_design_file = os.path.join(self.result_folder, "tempblif.blif")
+                    dl1 = DataGenerator(self.reader.connection, self.reader.nodeName, method = "all")
+                    r_ = BlifReader(current_design_file)
+                    dl2 = DataGenerator(r_.connection, r_.nodeName, method="all")
+                    _, y1 = dl1.generator()
+                    _, y2 = dl2.generator()
+                    predictions = np.all(y1 == y2, axis = 1)
+                    right = sum(predictions)
+                    whole = predictions.shape[0]
+                    print("[Candidate result accuracy: {:.2f}%({}/{})]".format(right/whole, right, whole), file = fp)
+                else:
+                    print("[Sorry] input nodes number are too large to check accuracy for all dataset", file = fp)
+
         if flag:
             with open(os.path.join(self.result_folder, "success"), "w") as fp:
                 pass
         else:
             with open(os.path.join(self.result_folder, "failure"), "w") as fp:
                 pass
+           
         
     def repeat_run(self, times):
         os.makedirs(self.result_folder, exist_ok=True)
@@ -185,6 +207,7 @@ class Implement:
             for i in range(epoch):
                 # shuffle
                 train_x, train_y = self.data_loader.generator(data_per_epoch)
+                #train_x, train_y = xx, yy
                 train_x, train_y = shuffle(train_x, train_y)
                 batchsize = min(batch_size, train_x.shape[0])
                 # make minibatch
@@ -237,9 +260,12 @@ class Implement:
     
     def training_sample(self, savedfile=sys.stdout):      
         
+        start_time = time.perf_counter()
+        time_limit = 3600
+        num_of_counter = 0
         max_iteration = 1000
         max_epoch = 2000
-        chance_of_reset_gate = 20
+        chance_of_reset_gate = 30
         self.data_loader.reset_sample()
         tempBlif = os.path.join(self.result_folder, "tempblif.blif")
         temp_val = os.path.join(self.result_folder, "temp_val.txt")
@@ -286,7 +312,7 @@ class Implement:
                 if self.fan_out_training:
                     for name in self.fan_out_gates.keys():
                         if not self.fan_out_gates[name].isFunctionallyEqual(sess):
-                            print("[Failure] fan-out gate %s got changed!" % name, file=savedfile)
+                            myprint("[Failure] fan-out gate %s got changed!" % name, file=savedfile)
                             return False 
                 # get functionality of missing gates
                 cur_result = {}
@@ -330,7 +356,7 @@ class Implement:
                     for epoch in range(1, max_epoch+1):
                         x, y = shuffle(x, y)
                         
-                        BT = train_x.shape[0]//batch
+                        BT = x.shape[0]//batch
                         total_loss = 0
                         for bt in range(BT):
                             ins = x[bt*batch:(bt+1)*batch]
@@ -338,9 +364,9 @@ class Implement:
                             _, loss_value = sess.run((self.model.opt, self.model.loss), 
                                             feed_dict = {self.model.trueInputs: ins, self.model.trueOut: outs})  
                             total_loss += loss_value
-                        if train_x.shape[0] > BT * batch:
-                            ins = x[BT*batch:train_x.shape[0]]
-                            outs = y[BT*batch:train_x.shape[0]]
+                        if x.shape[0] > BT * batch:
+                            ins = x[BT*batch:x.shape[0]]
+                            outs = y[BT*batch:x.shape[0]]
                             _, loss_value = sess.run((self.model.opt, self.model.loss),
                                             feed_dict = {self.model.trueInputs: ins, self.model.trueOut: outs})
                             total_loss += loss_value
@@ -351,11 +377,27 @@ class Implement:
                             print("[iteration %3d][epoch %4d] find a new candidate" % (i, epoch), file=savedfile)
                             return True
                         # wrong = np.nonzero(np.any(predict!=y, axis=1))[0]
-                    print("[Failure %2d] [iteration %3d][epoch %4d] [loss %.3f] reach maximum epoch, cannot find candidate!" % (chance, i, epoch, loss_value), file=savedfile)
+                    print("[Failure %2d] [iteration %3d][epoch %4d] [loss %.3f] reach maximum epoch, cannot find candidate!" % (chance, i, epoch, total_loss), file=savedfile)
                     return False
                     
                 train_x, train_y = self.data_loader.generator()
+                if train_x.shape[0] == num_of_counter:
+                    print("Now you know what goes wrong!", file=savedfile)
+                    pred_ = sess.run((self.model.prediction), feed_dict={self.model.trueInputs:train_x})
+                    print("inputs:" + str(train_x), file=savedfile)
+                    print("predition:" + str(pred_), file=savedfile)
+                    print("Truth:"+ str(train_y), file=savedfile)
+                    self.print_parameters(sess, savedfile)
+                    print("1#################", file=savedfile)
+                    return False
+                else:
+                    num_of_counter += 1
+                    
                 for chance in range(chance_of_reset_gate+1):
+                    if time.perf_counter() - start_time > time_limit:
+                        print("[TIME OUT] you have reached {} second limit".format(time_limit), file=savedfile)
+                        return False
+                    
                     if training_part(train_x, train_y, max_epoch, chance+1):
                         #self.print_parameters(sess,savedfile)
                         break
@@ -368,12 +410,17 @@ class Implement:
                             return False
                         # finding which gates may got problem, from fan_in of wrong predition
                         predict = sess.run((self.model.prediction), feed_dict = {self.model.trueInputs: train_x})
-                        print("pridiction: {}, true: {}".format(predict,train_y), file=savedfile)
-                        wrong_output = np.nonzero(np.any(predict != train_y, axis = 0))[0]
-                        print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in wrong_output]), file=savedfile)
+                        print("prediction: {}, true: {}".format(predict, train_y))
+                        wrong_output = np.any(predict != train_y, axis = 0)
+                        print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in np.nonzero(wrong_output)[0]]))
                         correspond_gates = set()
-                        for o in wrong_output:
-                            correspond_gates = correspond_gates.union(self.fan_in_respond[o])
+                        rest_gates = set()
+                        for index, o in enumerate(wrong_output):
+                            if o:
+                                correspond_gates = correspond_gates.union(self.fan_in_respond[index])
+                            else:
+                                rest_gates = rest_gates.union(self.fan_in_respond[index])
+                        correspond_gates = correspond_gates.difference(rest_gates)
                         # reset those gates
                         # changing_gate = set()
                         for name in correspond_gates:
@@ -390,7 +437,7 @@ class Implement:
             print("[Failure] Reached maximum iteration", file=savedfile)
             return False        
         
-        
+    
     def print_parameters(self, sess, savedfile=sys.stdout):
         print('***********weight update***********', file=savedfile)
         if self.has_bias:
@@ -404,7 +451,7 @@ class Implement:
                       file=savedfile)
             if self.fan_out_training:
                 for gate in self.fan_out_gates.values():
-                    print("Trainable Gate: {}, initial type: {}, current type: {}, weight: {}, bias: {}".format(
+                    print("Fan-out Gate: {}, initial type: {}, current type: {}, weight: {}, bias: {}".format(
                                             gate.name, 
                                             gate.type,
                                             gate.judge(sess),
@@ -421,7 +468,7 @@ class Implement:
                       file=savedfile)
             if self.fan_out_training:
                 for gate in self.fan_out_gates.values():
-                    print("Trainable Gate: {}, initial type: {}, current type: {}, weight: {}".format(
+                    print("Fan-out Gate: {}, initial type: {}, current type: {}, weight: {}".format(
                                             gate.name, 
                                             gate.type,
                                             gate.judge(sess),

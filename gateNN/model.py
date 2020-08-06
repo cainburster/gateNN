@@ -125,7 +125,7 @@ class DAGmodel:
                 affined_in = tf.stack([self.nodes[in1], self.nodes[in2]], axis = 1)
             self.nodes[out] = binaryDense(ins=affined_in, 
                                           unit=1, 
-                                          activation=train_activation, 
+                                          activation=binary_activation, 
                                           bias=has_bias,
                                           kernel_initializer=tf.random_uniform_initializer(-0.7,0.7), 
                                           bias_initializer=tf.zeros_initializer(),

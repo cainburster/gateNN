@@ -77,7 +77,7 @@ class DataGenerator:
         f = "{:0>" + str(L) + "}"
         func = lambda i: list(map(int, f.format(str(bin(i))[2:])))
         
-        if N > 2**18:
+        if N > max_size:
             raise Exception("Generating %d patterns takes too many resources! Please choose a random generating way.")
             
         index_list = list(range(N))
