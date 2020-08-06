@@ -414,13 +414,15 @@ class Implement:
                         wrong_output = np.any(predict != train_y, axis = 0)
                         print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in np.nonzero(wrong_output)[0]]))
                         correspond_gates = set()
-                        rest_gates = set()
-                        for index, o in enumerate(wrong_output):
-                            if o:
-                                correspond_gates = correspond_gates.union(self.fan_in_respond[index])
-                            else:
-                                rest_gates = rest_gates.union(self.fan_in_respond[index])
-                        correspond_gates = correspond_gates.difference(rest_gates)
+                        for o in wrong_output:
+                            correspond_gates = correspond_gates.union(self.fan_in_respond[o])
+#                         rest_gates = set()
+#                         for index, o in enumerate(wrong_output):
+#                             if o:
+#                                 correspond_gates = correspond_gates.union(self.fan_in_respond[index])
+#                             else:
+#                                 rest_gates = rest_gates.union(self.fan_in_respond[index])
+#                         correspond_gates = correspond_gates.difference(rest_gates)
                         # reset those gates
                         # changing_gate = set()
                         for name in correspond_gates:
