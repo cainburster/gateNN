@@ -135,11 +135,11 @@ class DAGmodel:
         else:
             if fan_out_training and trainable == 'train':
                 train_sym = True
-                coeff = np.array([[0.4],[0.4],[0.6]])
+                coeff = 0.5
                 coeff_bias = 0.5
             else:
                 train_sym = False
-                coeff = np.array([[0.4],[0.4],[0.6]])
+                coeff = 0.5
                 coeff_bias = 0.5
             if connection == 'BUF':
                 self.nodes[out] = self.nodes[in1]
