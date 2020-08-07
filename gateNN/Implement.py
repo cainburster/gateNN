@@ -415,8 +415,9 @@ class Implement:
                         wrong_output = np.any(predict != train_y, axis = 0)
                         print("wrong output: " + ",".join([self.reader.nodeName['output'][w] for w in np.nonzero(wrong_output)[0]]))
                         correspond_gates = set()
-                        for o in wrong_output:
-                            correspond_gates = correspond_gates.union(self.fan_in_respond[o])
+                        for index__, o in enumerate(wrong_output):
+                            if o:
+                                correspond_gates = correspond_gates.union(self.fan_in_respond[index__])
 #                         rest_gates = set()
 #                         for index, o in enumerate(wrong_output):
 #                             if o:
