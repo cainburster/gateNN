@@ -2,11 +2,12 @@
     "blif_file_path" : "./example/multi4.blif",
     "result_folder" : "trial_result",
     "abc_path" : "./abc/",
-    "vacant_gate":5,
+    "vacant_gate":15,
     "model_type":"kernel", 
     "fan_out_training":false, 
     "loader_method":"sample",
     "training_rate":0.1,
     "optimizer":"sgd",
-    "has_bias":false
+    "has_bias":false,
+    "time_limit":60
 }

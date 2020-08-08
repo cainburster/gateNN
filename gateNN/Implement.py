@@ -70,7 +70,8 @@ class Implement:
                        training_rate=0.05,
                        optimizer="momentum",
                        maximum_epoch=100,
-                       has_bias=True):
+                       has_bias=True,
+                       time_limit=3600):
         
         self.blif_file_path = os.path.abspath(blif_file_path)
         self.result_folder = os.path.abspath(result_folder)
@@ -85,6 +86,7 @@ class Implement:
         self.optimizer = optimizer
         self.maximum_epoch = maximum_epoch
         self.has_bias = has_bias
+        self.time_limit = time_limit
         
         self.reader = BlifReader(blif_file_path)
         self.reader.showNode()
@@ -127,7 +129,7 @@ class Implement:
         with open(log_file, "a") as fp:
             myprint("###start training!###", file = fp)
             if self.loader_method == "sample":
-                flag = self.training_sample(savedfile=fp)
+                flag = self.training_sample(savedfile=fp, time_limit=self.time_limit)
             else:
                 flag = self.training(self.data_per_epoch, self.maximum_epoch, self.batch_size, savedfile=fp)
             myprint("###end training!###", file = fp)
@@ -259,10 +261,10 @@ class Implement:
             return False
 
     
-    def training_sample(self, savedfile=sys.stdout):      
+    def training_sample(self, savedfile=sys.stdout, time_limit=3600):      
         
         start_time = time.perf_counter()
-        time_limit = 3600
+        #time_limit = 3600
         num_of_counter = 0
         max_iteration = 1000
         max_epoch = 2000
