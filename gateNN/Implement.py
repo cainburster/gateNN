@@ -24,7 +24,7 @@ class Gate:
     def __init__(self, name, gate_type, has_bias=True):
         self.name = name
         self.type = gate_type
-        assert self.type in self.gate_types
+        assert self.type in self.gate_types or self.type == "BUF" or self.type == "NOT"
         self.has_bias = has_bias
     
     def add_weight(self, weight_var):
