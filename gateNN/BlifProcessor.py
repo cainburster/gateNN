@@ -142,7 +142,7 @@ class BlifWriter:
             for in1, in2, out, t in connection:
                 if out in changed_gate:
                     t = changed_gate[out]
-                if t == "BUF1" or t == "NOT1":
+                if t == "BUF1" or t == "NOT1" or t == "BUF" or t == "NOT":
                     fp.write(".names %s %s\n" % (in1, out))
                     fp.write("%s\n" % BlifWriter.gate_format[t[:3]])
                 elif t == "BUF2" or t == "NOT2":
@@ -151,3 +151,4 @@ class BlifWriter:
                 else:                
                     fp.write(".names %s %s %s\n" % (in1, in2, out))
                     fp.write("%s\n" % BlifWriter.gate_format[t])
+            fp.write(".end\n")
