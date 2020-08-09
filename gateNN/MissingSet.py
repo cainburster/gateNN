@@ -18,7 +18,7 @@ class MissingSet:
                 self.links[in2].append(out)
                 self.backwards[out].append(in2)
             
-            if g_type != "BUF1" or g_type != "BUF2" or g_type != "NOT1" or g_type != "NOT2":
+            if g_type != "BUF1" or g_type != "BUF2" or g_type != "NOT1" or g_type != "NOT2" or g_type != "BUF" or g_type != "NOT":
                 self.candidates.append(out)
         
     def fan_out(self, gate):
