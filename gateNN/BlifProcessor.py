@@ -45,48 +45,69 @@ class BlifReader:
         if stype in BlifReader.gate_lib:
             return BlifReader.gate_lib[stype]
         else:
-            raise Exception("invalid gate string type")
+            raise Exception("invalid gate string type: "+ stype)
 
     def _readNode(self):
         with open(self.inputFile, 'r') as fp:
-            fp.readline() # skip comment
+            line = fp.readline()
+            while not line.startswith(".model"):
+                line = fp.readline()
+            self.modelName = line.rsplit()[1]
             
-            name_line = fp.readline()
-            assert name_line.startswith(".model")
-            self.modelName = name_line[7:].strip()
-            
-            input_line = fp.readline()
-            assert input_line.startswith('.inputs')
-            self.nodeName['input']=input_line[8:].split()
-            
-            output_line = fp.readline()
-            assert output_line.startswith('.outputs')
-            self.nodeName['output']=output_line[9:].split()
-            
-            remain = fp.read()
-            index = remain.find(".end")
-            gate_lines = remain[:index].split(".names ")[1:]
-            self.gatesNumber = len(gate_lines)
-            for gate_info in gate_lines:
-                gate_info = gate_info.rstrip()
-                space_pos = gate_info.find("\n")
-                names = gate_info[:space_pos].split()
-                gate_str = gate_info[space_pos + 1:]
-                gate_type = self._gate_type_distinguish(gate_str)
-
-                if len(names) == 3:
-                    in1, in2, out = names
-                    assert in1 in self.nodeName['input'] or in1 in self.nodeName['hidden'] or in1 in self.nodeName['output']
-                    assert in2 in self.nodeName['input'] or in2 in self.nodeName['hidden'] or in2 in self.nodeName['output']
-                    if out not in self.nodeName['output']:
-                        self.nodeName['hidden'].append(out)
-                    self.connection.append((in1, in2, out, gate_type))
-                elif len(names) == 2:
-                    in1, out = names # has to be NOT or BUF
-                    assert in1 in self.nodeName['input'] or in1 in self.nodeName['hidden'] or in1 in self.nodeName['output']
-                    if out not in self.nodeName['output']:
-                        self.nodeName['hidden'].append(out)
-                    self.connection.append((in1, None, out, gate_type))
+            line = fp.readline()
+            lineReady = False
+            while line != "":
+                if line.startswith(".inputs"):
+                    names = []
+                    cur_name = line.rsplit()[1:]
+                    while cur_name[-1] == "\\":
+                        names.extend(cur_name[:-1])
+                        line = fp.readline()
+                        cur_name = line.rsplit()
+                    names.extend(cur_name)
+                    self.nodeName['input'] = names.copy()
+                elif line.startswith(".outputs"):
+                    names = []
+                    cur_name = line.rsplit()[1:]
+                    while cur_name[-1] == "\\":
+                        names.extend(cur_name[:-1])
+                        line = fp.readline()
+                        cur_name = line.rsplit()
+                    names.extend(cur_name)
+                    self.nodeName['output'] = names.copy()
+                elif line.startswith(".names"):
+                    self.gatesNumber += 1
+                    nodes = line.rsplit()[1:]
+                    if len(nodes) == 2:
+                        in1, out = nodes # has to be NOT or BUF
+                        #assert in1 in self.nodeName['input'] or in1 in self.nodeName['hidden'] or in1 in self.nodeName['output']
+                        if out not in self.nodeName['output']:
+                            self.nodeName['hidden'].append(out)
+                        gate_type = self._gate_type_distinguish(fp.readline())
+                        self.connection.append((in1, None, out, gate_type))
+                    elif len(nodes) == 3:
+                        in1, in2, out = nodes
+                        #assert in1 in self.nodeName['input'] or in1 in self.nodeName['hidden'] or in1 in self.nodeName['output']
+                        #assert in2 in self.nodeName['input'] or in2 in self.nodeName['hidden'] or in2 in self.nodeName['output']
+                        if out not in self.nodeName['output']:
+                            self.nodeName['hidden'].append(out)
+                        fun_line1 = fp.readline()
+                        line = fp.readline()
+                        if line.startswith("."):
+                            gate_type = self._gate_type_distinguish(fun_line1)
+                            lineReady = True
+                        else:
+                            gate_type = self._gate_type_distinguish(fun_line1 + line)
+                        self.connection.append((in1, in2, out, gate_type))
+                    else:
+                        raise Exception("can not show more than 3 nodes")
+                elif line.startswith(".end"):
+                    break
+                else:
+                    raise Exception("[ERROR] strange line inside the file: " + line)
+                if not lineReady:
+                    line = fp.readline()
+           
     
     def showNode(self):
         print('Model name: {}'.format(self.modelName))
@@ -96,7 +117,8 @@ class BlifReader:
         print('Hidden Nodes({}): {}'.format(hiddenlen, ', '.join(hiddenShow)))
         print('Output Nodes({}): {}'.format(len(self.nodeName['output']), ', '.join(self.nodeName['output'])))
         print('Gates number: {}'.format(self.gatesNumber))
-
+        
+        
 
 class BlifWriter:
     gate_format = {
