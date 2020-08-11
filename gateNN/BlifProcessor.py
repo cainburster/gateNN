@@ -107,6 +107,7 @@ class BlifReader:
                     raise Exception("[ERROR] strange line inside the file: " + line)
                 if not lineReady:
                     line = fp.readline()
+                lineReady = False
            
     
     def showNode(self):
