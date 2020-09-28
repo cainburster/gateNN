@@ -55,6 +55,17 @@ python main.py setting/sample_training_example.json`
 ```
 to get the quick demo. 
 
+
+Result Folder
+-----------------
+The result folder contains three files. 
+ * `log.txt` includes the record of training process as well as the change of weight values. If a solution is found, it will be given at the end of file
+ * `tempblif.blif` shall give the final structure of circuit suggested by the algorithm.
+ * `temp_val.txt` is a intermediate file given by CEC which can be ignored. 
+
 Limitation
 -----------------
 Current version of methods only take consideration of aig or xaig circuit in BLIF format. All the components of circuit shall be a two-level gate.
+
+
+
